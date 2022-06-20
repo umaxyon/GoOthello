@@ -9,6 +9,12 @@ func NewPoint(x, y int) *Point {
 	return &Point{x, y}
 }
 
+func PointIs(cord string) *Point {
+	x := cord[0] - 'a' + 1
+	y := cord[1] - '1' + 1
+	return NewPoint(int(x), int(y))
+}
+
 type Disc struct {
 	Point
 	color Color
@@ -40,13 +46,68 @@ type Board struct {
 }
 
 func NewBoard() *Board {
-	return &Board{
+	board := Board{
 		RawBoard:   make([][]Color, Size+2),
 		MovablePos: make([][]Disc, 0, 0),
 	}
+	for i := 0; i <= Size; i++ {
+		board.MovablePos[i] = make([]Disc, 0, 0)
+	}
+	board.Init()
+	return &board
 }
 
 func (b *Board) Init() {
+	for x := 1; x <= Size; x++ {
+		for y := 1; y <= Size; y++ {
+			b.RawBoard[x][y] = Empty
+		}
+	}
+
+	for y := 0; y < Size+2; y++ {
+		b.RawBoard[0][y] = Wall
+		b.RawBoard[Size+1][y] = Wall
+	}
+
+	for x := 0; x < Size+2; x++ {
+		b.RawBoard[x][0] = Wall
+		b.RawBoard[x][Size+1] = Wall
+	}
+
+	b.RawBoard[4][4] = White
+	b.RawBoard[5][5] = White
+	b.RawBoard[4][5] = Black
+	b.RawBoard[5][4] = Black
+
+	b.Discs.Set(Black, 2)
+	b.Discs.Set(White, 2)
+	b.Discs.Set(Empty, Size*Size-4)
+
+	b.Turns = 0
+	b.CurrentColor = Black
+
+	b.UpdateLog = make([][]Disc, 0, 0)
+
+	b.InitMovable()
+}
+
+func (b *Board) CountDisc(color Color) int {
+	return b.Discs.Get(color)
+}
+
+func (b *Board) GetColor(p Point) Color {
+	return b.RawBoard[p.x][p.y]
+}
+
+func (b *Board) GetMovablePos() []Disc {
+	return b.MovablePos[b.Turns]
+}
+
+func (b *Board) GetUpdate() []Disc {
+	if len(b.UpdateLog) == 0 {
+		return make([]Disc, 0, 0)
+	}
+	return b.UpdateLog[len(b.UpdateLog)-1]
 }
 
 func (b *Board) Move(p Point) bool {
