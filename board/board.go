@@ -64,7 +64,43 @@ func (b *Board) Move(p Point) bool {
 	return true
 }
 
-func (b *Board) Undo() {
+func (b *Board) Undo() bool {
+	if b.Turns == 0 {
+		return false
+	}
+
+	b.CurrentColor = -b.CurrentColor
+	update := b.popUpdateLog()
+
+	if len(update) == 0 {
+		b.MovablePos[b.Turns] = make([]Disc, 0, 0)
+		for x := 1; x <= Size; x++ {
+			for y := 1; y <= Size; y++ {
+				b.MovableDir[b.Turns][x][y] = None
+			}
+		}
+	} else {
+		b.Turns--
+		p := update[0]
+		b.RawBoard[p.x][p.y] = Empty
+		for i := 1; i < len(update); i++ {
+			p = update[i]
+			b.RawBoard[p.x][p.y] = -b.CurrentColor
+		}
+
+		discDiff := len(update)
+		b.Discs.Set(b.CurrentColor, b.Discs.Get(b.CurrentColor)-discDiff)
+		b.Discs.Set(-b.CurrentColor, b.Discs.Get(-b.CurrentColor)+(discDiff-1))
+		b.Discs.Set(Empty, b.Discs.Get(Empty)+1)
+	}
+	return true
+}
+
+func (b *Board) popUpdateLog() []Disc {
+	last := len(b.UpdateLog) - 1
+	discs := b.UpdateLog[last]
+	b.UpdateLog = b.UpdateLog[:last]
+	return discs
 }
 
 func (b *Board) Pass() bool {
