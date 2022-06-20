@@ -48,11 +48,22 @@ type Board struct {
 func NewBoard() *Board {
 	board := Board{
 		RawBoard:   make([][]Color, Size+2),
-		MovablePos: make([][]Disc, 0, 0),
+		MovablePos: make([][]Disc, MaxTurns+1),
+		MovableDir: make([][][]Direction, MaxTurns+1),
+		Discs:      ColorStorage{data: make([]int, 3)},
 	}
-	for i := 0; i <= Size; i++ {
-		board.MovablePos[i] = make([]Disc, 0, 0)
+	for i := 0; i < Size+2; i++ {
+		board.RawBoard[i] = make([]Color, Size+2)
 	}
+
+	for i := 0; i < MaxTurns+1; i++ {
+		board.MovablePos[i] = make([]Disc, 1)
+		board.MovableDir[i] = make([][]Direction, Size+2)
+		for j := 0; j < Size+2; j++ {
+			board.MovableDir[i][j] = make([]Direction, Size+2)
+		}
+	}
+
 	board.Init()
 	return &board
 }
@@ -111,7 +122,7 @@ func (b *Board) GetUpdate() []Disc {
 }
 
 func (b *Board) Move(p Point) bool {
-	if (p.x < 0 || p.x >= Size) || (p.y < 0 || p.y >= Size) || b.MovableDir[b.Turns][p.x][p.y] == None {
+	if (p.x < 0 || p.x > Size) || (p.y < 0 || p.y > Size) || b.MovableDir[b.Turns][p.x][p.y] == None {
 		return false
 	}
 
@@ -317,7 +328,7 @@ func (b *Board) FlipDiscs(p Point) {
 		x := p.x + 1
 		y := p.y - 1
 		for b.CurrentColor != b.RawBoard[x][y] {
-			b.RawBoard[x][p.y] = b.CurrentColor
+			b.RawBoard[x][y] = b.CurrentColor
 			update = append(update, *NewDisc(x, y, b.CurrentColor))
 			x += 1
 			y -= 1
@@ -328,7 +339,7 @@ func (b *Board) FlipDiscs(p Point) {
 		x := p.x - 1
 		y := p.y - 1
 		for b.CurrentColor != b.RawBoard[x][y] {
-			b.RawBoard[x][p.y] = b.CurrentColor
+			b.RawBoard[x][y] = b.CurrentColor
 			update = append(update, *NewDisc(x, y, b.CurrentColor))
 			x -= 1
 			y -= 1
@@ -339,7 +350,7 @@ func (b *Board) FlipDiscs(p Point) {
 		x := p.x - 1
 		y := p.y + 1
 		for b.CurrentColor != b.RawBoard[x][y] {
-			b.RawBoard[x][p.y] = b.CurrentColor
+			b.RawBoard[x][y] = b.CurrentColor
 			update = append(update, *NewDisc(x, y, b.CurrentColor))
 			x -= 1
 			y += 1
@@ -350,7 +361,7 @@ func (b *Board) FlipDiscs(p Point) {
 		x := p.x + 1
 		y := p.y + 1
 		for b.CurrentColor != b.RawBoard[x][y] {
-			b.RawBoard[x][p.y] = b.CurrentColor
+			b.RawBoard[x][y] = b.CurrentColor
 			update = append(update, *NewDisc(x, y, b.CurrentColor))
 			x += 1
 			y += 1
