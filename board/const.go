@@ -4,7 +4,8 @@ type Color int
 type Direction int
 
 const (
-	Size int = 8
+	Size     int = 8
+	MaxTurns int = 60
 
 	Black Color = 1
 	Empty Color = 0
