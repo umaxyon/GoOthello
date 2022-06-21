@@ -295,6 +295,7 @@ func (b *Board) FlipDiscs(p Point) {
 	update := make([]Disc, 0, 0)
 
 	b.RawBoard[p.x][p.y] = b.CurrentColor
+	update = append(update, *NewDisc(p.x, p.y, b.CurrentColor))
 
 	if dir&Upper != None {
 		for y := p.y - 1; b.CurrentColor != b.RawBoard[p.x][y]; y -= 1 {
